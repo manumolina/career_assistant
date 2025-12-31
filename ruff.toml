@@ -1,0 +1,7 @@
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# Select specific rules to enable/disable if needed
+# extend-select = ["E", "F", "W"]
+

@@ -1,0 +1,38 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+
+# Configure Poetry: Don't create virtual env, install dependencies to system
+RUN poetry config virtualenvs.create false
+
+# Copy Poetry files
+COPY backend/pyproject.toml ./
+COPY backend/poetry.lock* ./
+
+# Install dependencies
+# If poetry.lock doesn't exist, poetry will generate it
+RUN if [ -f poetry.lock ]; then \
+        poetry install --only=main --no-root --no-interaction --no-ansi; \
+    else \
+        poetry lock --no-interaction --no-ansi && \
+        poetry install --only=main --no-root --no-interaction --no-ansi; \
+    fi
+
+# Copy backend code
+COPY backend/ .
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
