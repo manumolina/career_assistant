@@ -53,7 +53,7 @@ def generate_pdf(
     )
     
     # Title
-    story.append(Paragraph("Análisis de Candidatura", title_style))
+    story.append(Paragraph("Application Analysis", title_style))
     story.append(Spacer(1, 0.3*inch))
     
     # Match Percentage
@@ -66,28 +66,28 @@ def generate_pdf(
         alignment=TA_CENTER,
         spaceAfter=20
     )
-    story.append(Paragraph(f"Coincidencia: {match_percentage}%", match_style))
+    story.append(Paragraph(f"Match: {match_percentage}%", match_style))
     story.append(Spacer(1, 0.2*inch))
     
     # Recommendation
-    story.append(Paragraph("Recomendación", heading_style))
+    story.append(Paragraph("Recommendation", heading_style))
     story.append(Paragraph(recommendation, body_style))
     story.append(Spacer(1, 0.2*inch))
     
     # Strengths
-    story.append(Paragraph("Puntos Fuertes", heading_style))
+    story.append(Paragraph("Strengths", heading_style))
     for strength in strengths:
         story.append(Paragraph(f"• {strength}", body_style))
     story.append(Spacer(1, 0.2*inch))
     
     # Weaknesses
-    story.append(Paragraph("Puntos Débiles", heading_style))
+    story.append(Paragraph("Weaknesses", heading_style))
     for weakness in weaknesses:
         story.append(Paragraph(f"• {weakness}", body_style))
     story.append(PageBreak())
     
     # Four Week Plan
-    story.append(Paragraph("Plan de 4 Semanas", heading_style))
+    story.append(Paragraph("4-Week Plan", heading_style))
     plan_paragraphs = four_week_plan.split('\n')
     for para in plan_paragraphs:
         if para.strip():
@@ -96,20 +96,20 @@ def generate_pdf(
     
     # Additional Considerations
     if additional_considerations:
-        story.append(Paragraph("Consideraciones Adicionales", heading_style))
+        story.append(Paragraph("Additional Considerations", heading_style))
         story.append(Paragraph(additional_considerations, body_style))
         story.append(Spacer(1, 0.2*inch))
     
     # Analysis Details
     story.append(PageBreak())
-    story.append(Paragraph("Análisis Detallado del CV", heading_style))
+    story.append(Paragraph("Detailed CV Analysis", heading_style))
     cv_paragraphs = cv_analysis.split('\n')
     for para in cv_paragraphs[:20]:  # Limit length
         if para.strip():
             story.append(Paragraph(para.strip(), body_style))
     
     story.append(Spacer(1, 0.2*inch))
-    story.append(Paragraph("Análisis Detallado de la Oferta", heading_style))
+    story.append(Paragraph("Detailed Job Offer Analysis", heading_style))
     offer_paragraphs = job_offer_analysis.split('\n')
     for para in offer_paragraphs[:20]:  # Limit length
         if para.strip():

@@ -52,7 +52,7 @@ export default function FileInput({
             <p className="text-sm text-gray-700">{file.name}</p>
           ) : (
             <p className="text-sm text-gray-600">
-              Arrastra un archivo aquí o haz clic para seleccionar
+              Drag a file here or click to select
             </p>
           )}
         </div>
@@ -61,7 +61,7 @@ export default function FileInput({
         <div className="flex flex-col">
           <div className="flex items-center mb-2">
             <LinkIcon className="h-5 w-5 text-gray-400 mr-2" />
-            <span className="text-sm text-gray-600">O introduce un enlace</span>
+            <span className="text-sm text-gray-600">Or enter a link</span>
           </div>
           <input
             type="text"
@@ -81,7 +81,7 @@ export default function FileInput({
           }}
           className="text-sm text-red-600 hover:text-red-700"
         >
-          Limpiar
+          Clear
         </button>
       )}
     </div>

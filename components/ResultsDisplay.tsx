@@ -28,7 +28,7 @@ export default function ResultsDisplay({ results, onDownload, onNewProcess }: Re
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold text-gray-900">
-            Resultado del Análisis
+            Analysis Results
           </h2>
           <div
             className={`px-4 py-2 rounded-full font-bold text-2xl ${getMatchColor(
@@ -56,7 +56,7 @@ export default function ResultsDisplay({ results, onDownload, onNewProcess }: Re
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
           <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
-          Recomendación
+          Recommendation
         </h3>
         <p className="text-gray-700 leading-relaxed">{results.recommendation}</p>
       </div>
@@ -65,7 +65,7 @@ export default function ResultsDisplay({ results, onDownload, onNewProcess }: Re
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
           <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
-          Puntos Fuertes
+          Strengths
         </h3>
         <ul className="space-y-2">
           {results.strengths.map((strength, index) => (
@@ -81,7 +81,7 @@ export default function ResultsDisplay({ results, onDownload, onNewProcess }: Re
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
           <XCircle className="h-5 w-5 mr-2 text-red-600" />
-          Puntos Débiles
+          Weaknesses
         </h3>
         <ul className="space-y-2">
           {results.weaknesses.map((weakness, index) => (
@@ -97,7 +97,7 @@ export default function ResultsDisplay({ results, onDownload, onNewProcess }: Re
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
           <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
-          Plan de 4 Semanas
+          4-Week Plan
         </h3>
         <div className="text-gray-700 leading-relaxed space-y-3">
           {(() => {
@@ -228,26 +228,26 @@ export default function ResultsDisplay({ results, onDownload, onNewProcess }: Re
             className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center"
           >
             <Download className="h-5 w-5 mr-2" />
-            Descargar PDF Completo
+            Download Full PDF
           </button>
           <button
             onClick={onNewProcess}
             className="w-full bg-gray-200 text-gray-700 py-3 px-6 rounded-md font-semibold hover:bg-gray-300 transition-colors"
           >
-            Iniciar Nuevo Proceso
+            Start New Process
           </button>
         </div>
       )}
       {results.pdf_available === false && (
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-3">
           <p className="text-center text-gray-500">
-            PDF no disponible. El PDF se genera automáticamente cuando hay análisis disponibles.
+            PDF not available. PDF is automatically generated when analysis is available.
           </p>
           <button
             onClick={onNewProcess}
             className="w-full bg-gray-200 text-gray-700 py-3 px-6 rounded-md font-semibold hover:bg-gray-300 transition-colors"
           >
-            Iniciar Nuevo Proceso
+            Start New Process
           </button>
         </div>
       )}

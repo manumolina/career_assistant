@@ -20,17 +20,17 @@ async def analyze_cv(cv_text: str) -> str:
     """Analyze CV and extract key information"""
     model = genai.GenerativeModel(MODEL_NAME)
 
-    prompt = f"""Analiza el siguiente CV y extrae información clave sobre:
-- Experiencia laboral
-- Habilidades técnicas
-- Educación
-- Logros destacados
-- Áreas de especialización
+    prompt = f"""Analyze the following CV and extract key information about:
+- Work experience
+- Technical skills
+- Education
+- Notable achievements
+- Areas of specialization
 
 CV:
 {cv_text}
 
-Proporciona un análisis estructurado del CV."""
+Provide a structured analysis of the CV."""
 
     response = model.generate_content(prompt)
     return response.text
@@ -40,17 +40,17 @@ async def analyze_job_offer(job_offer_text: str) -> str:
     """Analyze job offer and extract key information"""
     model = genai.GenerativeModel(MODEL_NAME)
 
-    prompt = f"""Analiza la siguiente oferta de trabajo y extrae información clave sobre:
-- Requisitos técnicos
-- Experiencia requerida
-- Habilidades necesarias
-- Responsabilidades
-- Preferencias adicionales
+    prompt = f"""Analyze the following job offer and extract key information about:
+- Technical requirements
+- Required experience
+- Necessary skills
+- Responsibilities
+- Additional preferences
 
-Oferta de trabajo:
+Job offer:
 {job_offer_text}
 
-Proporciona un análisis estructurado de la oferta."""
+Provide a structured analysis of the offer."""
 
     response = model.generate_content(prompt)
     return response.text
@@ -64,29 +64,29 @@ async def compare_cv_and_offer(
     """Compare CV and job offer to generate analysis"""
     model = genai.GenerativeModel(MODEL_NAME)
 
-    considerations_text = f"\nConsideraciones adicionales del usuario que deben estar siempre relacionadas con la oferta de trabajo: {additional_considerations}" if additional_considerations else ""
+    considerations_text = f"\nAdditional user considerations that must always be related to the job offer: {additional_considerations}" if additional_considerations else ""
 
-    prompt = f"""Compara el análisis del CV con el análisis de la oferta de trabajo y proporciona:
+    prompt = f"""Compare the CV analysis with the job offer analysis and provide:
 
-1. PUNTOS FUERTES: Lista de 5-8 puntos fuertes que el candidato tiene para esta oferta (formato: lista con viñetas)
-2. PUNTOS DÉBILES: Lista de 5-8 puntos débiles o áreas de mejora (formato: lista con viñetas)
-3. RECOMENDACIÓN: Un resumen de 2-3 líneas indicando si recomiendas aplicar o no, y por qué
-4. PLAN DE 4 SEMANAS: Un plan detallado de 4 semanas (una semana por sección) para que el candidato se ponga al día con los conceptos que le faltan. Cada semana debe incluir objetivos específicos y acciones concretas.
+1. STRENGTHS: List of 5-8 strengths the candidate has for this offer (format: bullet list)
+2. WEAKNESSES: List of 5-8 weaknesses or areas for improvement (format: bullet list)
+3. RECOMMENDATION: A 2-3 line summary indicating whether you recommend applying or not, and why
+4. 4-WEEK PLAN: A detailed 4-week plan (one week per section) for the candidate to catch up on missing concepts. Each week must include specific objectives and concrete actions.
 
-Análisis del CV:
+CV Analysis:
 {cv_analysis}
 
-Análisis de la Oferta:
+Job Offer Analysis:
 {job_offer_analysis}
 {considerations_text}
 
-Responde ÚNICAMENTE en formato JSON válido con esta estructura exacta (sin texto adicional antes o después):
+Respond ONLY in valid JSON format with this exact structure (no additional text before or after):
 {{
-  "strengths": ["fortaleza 1", "fortaleza 2", ...],
-  "weaknesses": ["debilidad 1", "debilidad 2", ...],
-  "recommendation": "recomendación de 2-3 líneas",
+  "strengths": ["strength 1", "strength 2", ...],
+  "weaknesses": ["weakness 1", "weakness 2", ...],
+  "recommendation": "2-3 line recommendation",
   "matchPercentage": 75,
-  "fourWeekPlan": "Plan detallado de 4 semanas con formato claro, cada semana en una línea separada"
+  "fourWeekPlan": "Detailed 4-week plan with clear format, each week on a separate line"
 }}"""
 
     response = model.generate_content(prompt)
@@ -148,9 +148,9 @@ def parse_fallback_response(text: str) -> dict:
         match_percentage = round((len(strengths) / total_points) * 100)
 
     return {
-        "strengths": strengths if strengths else ["Análisis completado"],
-        "weaknesses": weaknesses if weaknesses else ["Revisar detalles"],
-        "recommendation": recommendation.strip() or "Revisa el análisis completo para tomar una decisión.",
+        "strengths": strengths if strengths else ["Analysis completed"],
+        "weaknesses": weaknesses if weaknesses else ["Review details"],
+        "recommendation": recommendation.strip() or "Review the complete analysis to make a decision.",
         "matchPercentage": match_percentage,
-        "fourWeekPlan": four_week_plan.strip() or "Plan de mejora personalizado basado en el análisis."
+        "fourWeekPlan": four_week_plan.strip() or "Personalized improvement plan based on the analysis."
     }

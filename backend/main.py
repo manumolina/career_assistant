@@ -210,8 +210,8 @@ async def get_or_compute_comparison(
                 status_code=404,
                 detail={
                     "error": "session_not_found",
-                    "message": f"La sesión '{session_id}' no se encontró en el sistema.",
-                    "suggestion": "Por favor, verifica que el ID de sesión sea correcto o proporciona los archivos CV y oferta de trabajo para crear un nuevo análisis."
+                    "message": f"Session '{session_id}' was not found in the system.",
+                    "suggestion": "Please verify that the session ID is correct or provide CV and job offer files to create a new analysis."
                 }
             )
 
@@ -360,8 +360,8 @@ async def process_application(
                 status_code=404,
                 detail={
                     "error": "session_not_found",
-                    "message": f"La sesión '{session_id}' no se encontró en el sistema.",
-                    "suggestion": "Por favor, verifica que el ID de sesión sea correcto o proporciona los archivos CV y oferta de trabajo para crear un nuevo análisis."
+                    "message": f"Session '{session_id}' was not found in the system.",
+                    "suggestion": "Please verify that the session ID is correct or provide CV and job offer files to create a new analysis."
                 }
             )
 
@@ -374,8 +374,8 @@ async def process_application(
                     status_code=429,
                     detail={
                         "error": "global_rate_limit_exceeded",
-                        "message": "Se ha alcanzado el límite global de 10 consultas diarias del sistema.",
-                        "suggestion": "Por favor, intenta de nuevo mañana. Este límite protege el sistema de posibles ataques."
+                        "message": "The global limit of 10 daily queries has been reached.",
+                        "suggestion": "Please try again tomorrow. This limit protects the system from potential attacks."
                     }
                 )
         
@@ -388,8 +388,8 @@ async def process_application(
                     status_code=429,
                     detail={
                         "error": "rate_limit_exceeded",
-                        "message": "Has alcanzado el límite de 2 consultas por día.",
-                        "suggestion": "Por favor, intenta de nuevo mañana o contacta con el administrador si necesitas más consultas."
+                        "message": "You have reached the limit of 2 queries per day.",
+                        "suggestion": "Please try again tomorrow or contact the administrator if you need more queries."
                     }
                 )
 

@@ -16,16 +16,16 @@ interface ProgressTrackerProps {
 
 export default function ProgressTracker({ status }: ProgressTrackerProps) {
   const tasks = [
-    { id: 'understand_cv', label: 'Entendiendo el CV', completed: status.tasks.understand_cv },
-    { id: 'understand_offer', label: 'Entendiendo la oferta de trabajo', completed: status.tasks.understand_offer },
-    { id: 'compare', label: 'Comparando y analizando', completed: status.tasks.compare },
-    { id: 'generate_pdf', label: 'Generando PDF', completed: status.tasks.generate_pdf },
+    { id: 'understand_cv', label: 'Understanding CV', completed: status.tasks.understand_cv },
+    { id: 'understand_offer', label: 'Understanding job offer', completed: status.tasks.understand_offer },
+    { id: 'compare', label: 'Comparing and analyzing', completed: status.tasks.compare },
+    { id: 'generate_pdf', label: 'Generating PDF', completed: status.tasks.generate_pdf },
   ]
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
       <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-        Progreso del Análisis
+        Analysis Progress
       </h2>
       <div className="space-y-4">
         {tasks.map((task, index) => (

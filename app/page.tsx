@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import FileInput from '@/components/FileInput'
 import ProgressTracker from '@/components/ProgressTracker'
 import ResultsDisplay from '@/components/ResultsDisplay'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, Shield, Lock } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -44,7 +44,7 @@ export default function Home() {
         const data = await response.json()
         setUserIP(data.ip)
       } catch (error) {
-        console.error('Error obteniendo IP:', error)
+        console.error('Error getting IP:', error)
         // Continue without IP if the service fails
       }
     }
@@ -77,17 +77,17 @@ export default function Home() {
     const hasFiles = (cvFile || cvLink) && hasJobOffer
     
     if (!hasPreviousSession && !hasFiles) {
-      alert('Por favor, proporciona el CV y la oferta de trabajo, o introduce una sesión anterior')
+      alert('Please provide CV and job offer, or enter a previous session ID')
       return
     }
     
     if (!hasPreviousSession && (!cvFile && !cvLink)) {
-      alert('Por favor, proporciona el CV')
+      alert('Please provide your CV')
       return
     }
     
     if (!hasPreviousSession && (!jobOfferFile && !jobOfferLink && !jobOfferText.trim())) {
-      alert('Por favor, proporciona la oferta de trabajo')
+      alert('Please provide the job offer')
       return
     }
 
@@ -155,7 +155,7 @@ export default function Home() {
         }
         
         // Generic error
-        const errorMessage = errorData.detail?.message || errorData.detail || 'Error al procesar la solicitud'
+        const errorMessage = errorData.detail?.message || errorData.detail || 'Error processing request'
         throw new Error(errorMessage)
       }
 
@@ -186,7 +186,7 @@ export default function Home() {
 
     } catch (error) {
       console.error('Error:', error)
-      setError(error instanceof Error ? error.message : 'Error al procesar la solicitud. Por favor, intenta de nuevo.')
+      setError(error instanceof Error ? error.message : 'Error processing request. Please try again.')
       setIsProcessing(false)
     }
   }
@@ -207,7 +207,7 @@ export default function Home() {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Error downloading PDF:', error)
-      alert('Error al descargar el PDF')
+      alert('Error downloading PDF')
     }
   }
 
@@ -236,7 +236,7 @@ export default function Home() {
           Career Assistant
         </h1>
         <p className="text-center text-gray-600 mb-8">
-          Analiza tu CV frente a ofertas de trabajo
+          Analyze your CV against job offers
         </p>
 
         {/* Error Message */}
@@ -268,7 +268,7 @@ export default function Home() {
             {/* Current Session ID (read-only) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID de Sesión Actual
+                Current Session ID
               </label>
               <div className="flex gap-2">
                 <input
@@ -280,43 +280,43 @@ export default function Home() {
                 <button
                   onClick={handleCopySessionId}
                   className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2"
-                  title="Copiar al portapapeles"
+                  title="Copy to clipboard"
                 >
                   {copied ? (
                     <>
                       <Check className="h-4 w-4 text-green-600" />
-                      <span className="text-sm text-green-600">Copiado</span>
+                      <span className="text-sm text-green-600">Copied</span>
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4 text-gray-600" />
-                      <span className="text-sm text-gray-600">Copiar</span>
+                      <span className="text-sm text-gray-600">Copy</span>
                     </>
                   )}
                 </button>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Guarda este ID para reutilizarlo más tarde
+                Save this ID to reuse it later
               </p>
             </div>
 
             {/* Previous Session ID (editable) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reutilizar Sesión Anterior
+                Reuse Previous Session
                 <span className="text-xs text-gray-500 ml-2">
-                  (opcional - si introduces una sesión, no será necesario adjuntar archivos)
+                  (optional - if you enter a session, files won't be required)
                 </span>
               </label>
               <input
                 type="text"
                 value={previousSessionId}
                 onChange={(e) => setPreviousSessionId(e.target.value)}
-                placeholder="Pega aquí el ID de una sesión anterior..."
+                placeholder="Paste a previous session ID here..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Si introduces una sesión anterior válida, se reutilizarán los resultados sin reprocesar
+                If you enter a valid previous session, results will be reused without reprocessing
               </p>
             </div>
             <FileInput
@@ -328,41 +328,53 @@ export default function Home() {
             />
 
             <FileInput
-              label="Oferta de Trabajo"
+              label="Job Offer"
               file={jobOfferFile}
               link={jobOfferLink}
               onFileChange={setJobOfferFile}
               onLinkChange={setJobOfferLink}
             />
 
-            {/* Campo de texto para pegar la oferta directamente */}
+            {/* Text field to paste job offer directly */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                O pega el contenido de la oferta aquí (opcional)
+                Or paste the job offer content here (optional)
               </label>
               <textarea
                 value={jobOfferText}
                 onChange={(e) => setJobOfferText(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={6}
-                placeholder="Pega aquí el contenido completo de la oferta de trabajo..."
+                placeholder="Paste the complete job offer content here..."
               />
               <p className="mt-1 text-xs text-gray-500">
-                Útil cuando no puedes acceder directamente al enlace (ej: LinkedIn)
+                Useful when you cannot access the link directly (e.g., LinkedIn)
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Consideraciones Adicionales (opcional)
+                Additional Considerations (optional)
               </label>
               <textarea
                 value={additionalConsiderations}
                 onChange={(e) => setAdditionalConsiderations(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={4}
-                placeholder="Añade cualquier consideración adicional que quieras que tenga en cuenta el análisis..."
+                placeholder="Add any additional considerations you want the analysis to take into account..."
               />
+            </div>
+
+            {/* Privacy Notice */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+              <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-blue-900 font-medium mb-1">Privacy & Data Protection</p>
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  Your uploaded data (CV, job offers, and additional information) will only be used to generate your personalized analysis. 
+                  <strong className="font-semibold"> We do not use your data for any studies, research, or commercial purposes, and we never sell or share your information with third parties.</strong>
+                </p>
+              </div>
             </div>
 
             <button
@@ -370,7 +382,7 @@ export default function Home() {
               disabled={isProcessing}
               className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {isProcessing ? 'Procesando...' : 'Iniciar Proceso'}
+              {isProcessing ? 'Processing...' : 'Start Process'}
             </button>
           </div>
         )}
