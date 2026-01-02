@@ -29,13 +29,13 @@ poetry shell
 ### Development
 
 ```bash
-poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8080
 ```
 
 ### Production
 
 ```bash
-poetry run uvicorn main:app --host 0.0.0.0 --port 8000
+poetry run uvicorn main:app --host 0.0.0.0 --port 8080
 ```
 
 ## Dependency Management

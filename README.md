@@ -77,9 +77,9 @@ docker-compose down
 ```
 
 The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Frontend: http://localhost:3100
+- Backend API: http://localhost:8080
+- API Docs: http://localhost:8080/docs
 
 ### 4. Running without Docker (Development)
 
@@ -96,11 +96,11 @@ cd backend
 poetry install
 
 # Activate virtual environment and run
-poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+poetry run uvicorn main:app --reload --host 0.0.0.0 --port 8080
 
 # Or run commands inside Poetry environment
 poetry shell
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8080
 ```
 
 **Useful Poetry commands:**
@@ -222,7 +222,7 @@ IP logs are automatically deleted after 30 days. You can run the SQL function `d
 
 ### Normal Process (New Session)
 
-1. Access the application at http://localhost:3000
+1. Access the application at http://localhost:3100
 2. **CV**: Upload a file or provide a link to your CV
 3. **Job Offer**: Choose one of these options:
    - Upload a file
@@ -250,4 +250,4 @@ IP logs are automatically deleted after 30 days. You can run the SQL function `d
 - `GET /api/status/{process_id}` - Get processing status
 - `GET /api/download/{process_id}` - Download generated PDF
 
-Complete API documentation available at http://localhost:8000/docs
+Complete API documentation available at http://localhost:8080/docs

@@ -5,7 +5,7 @@ import FileInput from '@/components/FileInput'
 import ResultsDisplay from '@/components/ResultsDisplay'
 import { Copy, Check, Shield, Lock } from 'lucide-react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
 // Generate a random session ID
 function generateSessionId(): string {

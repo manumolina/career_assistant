@@ -1,0 +1,26 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+COPY next.config.js ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code (will be overridden by volumes in dev)
+COPY app ./app
+COPY public ./public
+COPY components ./components
+
+EXPOSE 3100
+
+ENV PORT 3100
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "3100"]
+
