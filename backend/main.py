@@ -1,21 +1,18 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from typing import Optional, Tuple
+import hashlib
+import io
+import logging
+import os
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
-import httpx
-from datetime import datetime, timedelta
-import io
-import os
-import PyPDF2
-import hashlib
-from urllib.parse import urlparse
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
-from lib.supabase_client import supabase_client, supabase_admin
+from lib.document_processor import extract_text_from_input
 from lib.gemini_client import analyze_cv, analyze_job_offer, compare_cv_and_offer
 from lib.pdf_generator import generate_pdf
-import logging
+from lib.supabase_client import supabase_admin, supabase_client
 
 load_dotenv()
 
@@ -67,8 +64,8 @@ async def get_cached_comparison(
     session_id: str,
     cv_text_hash: str,
     job_offer_text_hash: str,
-    additional_considerations_hash: Optional[str]
-) -> Optional[dict]:
+    additional_considerations_hash: str | None
+) -> dict | None:
     """Check if comparison results exist in cache"""
     try:
         # Use admin client to bypass RLS
@@ -97,10 +94,10 @@ async def save_comparison_to_cache(
     session_id: str,
     cv_text_hash: str,
     job_offer_text_hash: str,
-    additional_considerations_hash: Optional[str],
+    additional_considerations_hash: str | None,
     comparison_results: dict,
-    cv_analysis: Optional[str] = None,
-    job_offer_analysis: Optional[str] = None
+    cv_analysis: str | None = None,
+    job_offer_analysis: str | None = None
 ):
     """Save comparison results to cache including analyses for PDF generation"""
     try:
@@ -158,7 +155,7 @@ async def analyze_documents(cv_text: str, job_offer_text: str, process_id: str):
     return cv_analysis, job_offer_analysis
 
 
-async def get_cached_comparison_by_session_id(session_id: str) -> Tuple[Optional[dict], Optional[str], Optional[str]]:
+async def get_cached_comparison_by_session_id(session_id: str) -> tuple[dict | None, str | None, str | None]:
     """Get cached comparison results by session_id only (without hash verification)
     Returns: (comparison_results, cv_analysis, job_offer_analysis)
     """
@@ -183,12 +180,12 @@ async def get_cached_comparison_by_session_id(session_id: str) -> Tuple[Optional
 
 
 async def get_or_compute_comparison(
-    cv_text: Optional[str],
-    job_offer_text: Optional[str],
-    additional_considerations: Optional[str],
-    session_id: Optional[str],
+    cv_text: str | None,
+    job_offer_text: str | None,
+    additional_considerations: str | None,
+    session_id: str | None,
     process_id: str
-) -> Tuple[dict, bool, Optional[str], Optional[str]]:
+) -> tuple[dict, bool, str | None, str | None]:
     """
     Get comparison from cache or compute it.
     Returns: (comparison_results, from_cache, cv_analysis, job_offer_analysis)
@@ -277,11 +274,10 @@ async def generate_and_upload_pdf(
     cv_text: str,
     job_offer_text: str,
     comparison_results: dict,
-    additional_considerations: Optional[str],
+    additional_considerations: str | None,
     process_id: str,
-    user_id: str,
-    cv_analysis: Optional[str] = None,
-    job_offer_analysis: Optional[str] = None
+    cv_analysis: str | None = None,
+    job_offer_analysis: str | None = None
 ) -> io.BytesIO:
     """Generate PDF and store in memory for download"""
     # Analyze documents for PDF if not already analyzed
@@ -309,15 +305,15 @@ async def generate_and_upload_pdf(
 
 @app.post("/api/process")
 async def process_application(
-    cv_file: Optional[UploadFile] = File(None),
-    cv_link: Optional[str] = Form(None),
-    job_offer_file: Optional[UploadFile] = File(None),
-    job_offer_link: Optional[str] = Form(None),
-    job_offer_text: Optional[str] = Form(None),
-    additional_considerations: Optional[str] = Form(None),
+    cv_file: UploadFile | None = File(None),
+    cv_link: str | None = Form(None),
+    job_offer_file: UploadFile | None = File(None),
+    job_offer_link: str | None = Form(None),
+    job_offer_text: str | None = Form(None),
+    additional_considerations: str | None = Form(None),
     user_id: str = Form("demo"),
-    session_id: Optional[str] = Form(None),
-    user_ip: Optional[str] = Form(None)
+    session_id: str | None = Form(None),
+    user_ip: str | None = Form(None)
 ):
     """Process CV and job offer to generate analysis"""
     logger.info("Starting process application")
@@ -378,7 +374,7 @@ async def process_application(
                         "suggestion": "Please try again tomorrow. This limit protects the system from potential attacks."
                     }
                 )
-        
+
         # Check per-IP rate limit (only for new requests)
         if is_new_request and user_ip:
             request_count = await count_user_requests(user_ip, hours=24)
@@ -422,7 +418,6 @@ async def process_application(
                 comparison_results,
                 additional_considerations,
                 process_id,
-                user_id,
                 cv_analysis,
                 job_offer_analysis
             )
@@ -468,14 +463,14 @@ async def get_status(process_id: str):
     """Get processing status"""
     if process_id not in processing_status:
         raise HTTPException(status_code=404, detail="Process not found")
-    
+
     status_data = processing_status[process_id].copy()
-    
+
     # Remove pdf_buffer from response (it's too large and not needed in status)
     # PDF can be downloaded via /api/download endpoint
     if "pdf_buffer" in status_data:
         status_data["pdf_buffer"] = "available" if status_data["pdf_buffer"] else None
-    
+
     return status_data
 
 
@@ -503,105 +498,6 @@ async def download_pdf(process_id: str):
         )
 
 
-def is_pdf_content(content: bytes, content_type: str = "", filename: str = "") -> bool:
-    """Check if content is a PDF based on content type, filename, or magic bytes."""
-    return (
-        content_type == "application/pdf" or
-        filename.lower().endswith('.pdf') or
-        content.startswith(b'%PDF')
-    )
-
-
-def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """Extract text from PDF content."""
-    try:
-        pdf_file = io.BytesIO(pdf_content)
-        pdf_reader = PyPDF2.PdfReader(pdf_file)
-        text_parts = []
-
-        for page_num, page in enumerate(pdf_reader.pages):
-            try:
-                page_text = page.extract_text()
-                if page_text:
-                    text_parts.append(page_text)
-            except Exception as e:
-                print(f"Error extracting text from PDF page {page_num}: {str(e)}")
-                continue
-
-        if not text_parts:
-            raise HTTPException(
-                status_code=400,
-                detail="Could not extract text from PDF. "
-                       "The PDF might be image-based or encrypted."
-            )
-        return "\n\n".join(text_parts)
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Error reading PDF: {str(e)}"
-        )
-
-
-def decode_text_content(content: bytes) -> str:
-    """Decode bytes content as text, trying UTF-8 first, then latin-1."""
-    try:
-        return content.decode('utf-8')
-    except UnicodeDecodeError:
-        try:
-            return content.decode('latin-1')
-        except Exception as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Could not decode file as text: {str(e)}"
-            )
-
-
-async def fetch_content_from_link(link: str) -> Tuple[bytes, str]:
-    """Fetch content from a URL and return content bytes and content type."""
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(link, timeout=30.0, follow_redirects=True)
-            response.raise_for_status()
-            content_type = response.headers.get("content-type", "").lower()
-            return response.content, content_type
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Error fetching link (HTTP {e.response.status_code}): {str(e)}"
-            )
-        except Exception as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Error fetching link: {str(e)}"
-            )
-
-
-async def extract_text_from_input(file: Optional[UploadFile], link: Optional[str]) -> str:
-    """Extract text from file or link. Supports both text files and PDFs."""
-    if file:
-        content = await file.read()
-        file_type = file.content_type or ""
-        file_name = file.filename or ""
-
-        if is_pdf_content(content, file_type, file_name):
-            return extract_text_from_pdf(content)
-        else:
-            return decode_text_content(content)
-
-    elif link:
-        content, content_type = await fetch_content_from_link(link)
-        parsed_url = urlparse(link)
-        is_pdf = is_pdf_content(content, content_type, parsed_url.path)
-
-        if is_pdf:
-            return extract_text_from_pdf(content)
-        else:
-            return decode_text_content(content)
-
-    else:
-        raise HTTPException(status_code=400, detail="Either file or link must be provided")
 
 
 async def count_total_requests(hours: int = 24) -> int:
@@ -611,15 +507,15 @@ async def count_total_requests(hours: int = 24) -> int:
         if not supabase_admin:
             logger.warning("supabase_admin not available, cannot count total requests")
             return 0
-        
+
         # Calculate the time threshold
         threshold_time = (datetime.now() - timedelta(hours=hours)).isoformat()
-        
+
         # Count all requests in the last N hours
         result = supabase_admin.table("user_requests").select(
             "id"
         ).gte("created_at", threshold_time).execute()
-        
+
         # Count the number of results
         count = len(result.data) if result.data else 0
         logger.info(f"Total requests in the last {hours} hours: {count}")
@@ -634,21 +530,21 @@ async def count_user_requests(user_ip: str, hours: int = 24) -> int:
     """Count completed requests from an IP address in the last N hours"""
     if not user_ip:
         return 0
-    
+
     try:
         # Use admin client to bypass RLS
         if not supabase_admin:
             logger.warning("supabase_admin not available, cannot count user requests")
             return 0
-        
+
         # Calculate the time threshold
         threshold_time = (datetime.now() - timedelta(hours=hours)).isoformat()
-        
+
         # Count requests from this IP in the last N hours
         result = supabase_admin.table("user_requests").select(
             "id"
         ).eq("ip_address", user_ip).gte("created_at", threshold_time).execute()
-        
+
         # Count the number of results
         count = len(result.data) if result.data else 0
         logger.info(f"IP {user_ip} has {count} requests in the last {hours} hours")
@@ -659,17 +555,17 @@ async def count_user_requests(user_ip: str, hours: int = 24) -> int:
         return 0
 
 
-async def save_user_request(process_id: str, user_id: str, user_ip: Optional[str]):
+async def save_user_request(process_id: str, user_id: str, user_ip: str | None):
     """Save user IP address and request timestamp to database (only if process completed)"""
     if not user_ip:
         return  # Skip if no IP provided
-    
+
     try:
         # Use admin client to bypass RLS
         if not supabase_admin:
             logger.warning("supabase_admin not available, cannot save user request")
             return
-        
+
         supabase_admin.table("user_requests").insert({
             "ip_address": user_ip,
             "process_id": process_id,

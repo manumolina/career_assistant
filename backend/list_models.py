@@ -2,8 +2,9 @@
 Script to list available Gemini models for debugging
 """
 import os
-from dotenv import load_dotenv
+
 import google.generativeai as genai
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -35,4 +36,3 @@ except Exception as e:
             print(f"✓ {model_name} - Available")
         except Exception as err:
             print(f"✗ {model_name} - Not available: {err}")
-

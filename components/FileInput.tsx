@@ -10,6 +10,7 @@ interface FileInputProps {
   link: string
   onFileChange: (file: File | null) => void
   onLinkChange: (link: string) => void
+  onError?: (error: string) => void
 }
 
 export default function FileInput({
@@ -18,16 +19,50 @@ export default function FileInput({
   link,
   onFileChange,
   onLinkChange,
+  onError,
 }: FileInputProps) {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      onFileChange(acceptedFiles[0])
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+    if (rejectedFiles.length > 0) {
+      const rejectedFile = rejectedFiles[0]
+      const fileName = rejectedFile.file?.name || 'archivo desconocido'
+      const errorMessage = `Tipo de archivo no soportado. Solo se aceptan archivos PDF, DOC, DOCX o TXT. Archivo seleccionado: ${fileName}`
+      if (onError) {
+        onError(errorMessage)
+      } else {
+        alert(errorMessage)
+      }
+      return
     }
-  }, [onFileChange])
+    
+    if (acceptedFiles.length > 0) {
+      const selectedFile = acceptedFiles[0]
+      const fileName = selectedFile.name.toLowerCase()
+      const validExtensions = ['.pdf', '.doc', '.docx', '.txt']
+      const isValidFile = validExtensions.some(ext => fileName.endsWith(ext))
+      
+      if (!isValidFile) {
+        const errorMessage = `Tipo de archivo no soportado. Solo se aceptan archivos PDF, DOC, DOCX o TXT. Archivo seleccionado: ${selectedFile.name}`
+        if (onError) {
+          onError(errorMessage)
+        } else {
+          alert(errorMessage)
+        }
+        return
+      }
+      
+      onFileChange(selectedFile)
+    }
+  }, [onFileChange, onError])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt']
+    }
   })
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
-import { Download, CheckCircle, XCircle, TrendingUp } from 'lucide-react'
+import { useState } from 'react'
+import { Download, CheckCircle, XCircle, TrendingUp, Copy, Check } from 'lucide-react'
 
 interface ResultsDisplayProps {
   results: {
@@ -11,19 +12,76 @@ interface ResultsDisplayProps {
     fourWeekPlan: string
     pdf_available?: boolean
   }
+  sessionId: string
   onDownload: () => void
   onNewProcess: () => void
 }
 
-export default function ResultsDisplay({ results, onDownload, onNewProcess }: ResultsDisplayProps) {
+export default function ResultsDisplay({ results, sessionId, onDownload, onNewProcess }: ResultsDisplayProps) {
+  const [copied, setCopied] = useState(false)
+
   const getMatchColor = (percentage: number) => {
     if (percentage >= 70) return 'text-green-600 bg-green-50'
     if (percentage >= 50) return 'text-yellow-600 bg-yellow-50'
     return 'text-red-600 bg-red-50'
   }
 
+  const handleCopySessionId = async () => {
+    try {
+      await navigator.clipboard.writeText(sessionId)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = sessionId
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Session ID */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Session ID
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={sessionId}
+            readOnly
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-md bg-gray-50 font-mono text-sm cursor-not-allowed"
+          />
+          <button
+            onClick={handleCopySessionId}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors flex items-center gap-2"
+            title="Copy to clipboard"
+          >
+            {copied ? (
+              <>
+                <Check className="h-4 w-4 text-green-600" />
+                <span className="text-sm text-green-600">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 text-gray-600" />
+                <span className="text-sm text-gray-600">Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Save this ID to reuse this analysis later
+        </p>
+      </div>
+
       {/* Match Percentage */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">

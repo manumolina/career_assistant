@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import FileInput from '@/components/FileInput'
-import ProgressTracker from '@/components/ProgressTracker'
 import ResultsDisplay from '@/components/ResultsDisplay'
 import { Copy, Check, Shield, Lock } from 'lucide-react'
 
@@ -77,17 +76,17 @@ export default function Home() {
     const hasFiles = (cvFile || cvLink) && hasJobOffer
     
     if (!hasPreviousSession && !hasFiles) {
-      alert('Please provide CV and job offer, or enter a previous session ID')
+      setError('Please provide CV and job offer, or enter a previous session ID')
       return
     }
     
     if (!hasPreviousSession && (!cvFile && !cvLink)) {
-      alert('Please provide your CV')
+      setError('Please provide your CV')
       return
     }
     
     if (!hasPreviousSession && (!jobOfferFile && !jobOfferLink && !jobOfferText.trim())) {
-      alert('Please provide the job offer')
+      setError('Please provide the job offer')
       return
     }
 
@@ -162,27 +161,7 @@ export default function Home() {
       const data = await response.json()
       setProcessId(data.process_id)
       setResults(data.results)
-
-      // Poll for status updates
-      const pollInterval = setInterval(async () => {
-        if (data.process_id) {
-          try {
-            const statusResponse = await fetch(`${API_URL}/api/status/${data.process_id}`)
-            const statusData = await statusResponse.json()
-            setStatus(statusData)
-            
-            if (statusData.status === 'completed' || statusData.status === 'error') {
-              clearInterval(pollInterval)
-              setIsProcessing(false)
-              if (statusData.results) {
-                setResults(statusData.results)
-              }
-            }
-          } catch (error) {
-            console.error('Error polling status:', error)
-          }
-        }
-      }, 1000)
+      setIsProcessing(false)
 
     } catch (error) {
       console.error('Error:', error)
@@ -239,30 +218,6 @@ export default function Home() {
           Analyze your CV against job offers
         </p>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg shadow-md">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3 flex-1">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-              <button
-                onClick={() => setError(null)}
-                className="ml-4 flex-shrink-0 text-red-500 hover:text-red-700"
-              >
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
         {!results && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-6 space-y-6">
             {/* Current Session ID (read-only) */}
@@ -311,7 +266,10 @@ export default function Home() {
               <input
                 type="text"
                 value={previousSessionId}
-                onChange={(e) => setPreviousSessionId(e.target.value)}
+                onChange={(e) => {
+                  setPreviousSessionId(e.target.value)
+                  if (error) setError(null)
+                }}
                 placeholder="Paste a previous session ID here..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
               />
@@ -323,16 +281,30 @@ export default function Home() {
               label="CV"
               file={cvFile}
               link={cvLink}
-              onFileChange={setCvFile}
-              onLinkChange={setCvLink}
+              onFileChange={(file) => {
+                setCvFile(file)
+                if (error) setError(null)
+              }}
+              onLinkChange={(link) => {
+                setCvLink(link)
+                if (error) setError(null)
+              }}
+              onError={setError}
             />
 
             <FileInput
               label="Job Offer"
               file={jobOfferFile}
               link={jobOfferLink}
-              onFileChange={setJobOfferFile}
-              onLinkChange={setJobOfferLink}
+              onFileChange={(file) => {
+                setJobOfferFile(file)
+                if (error) setError(null)
+              }}
+              onLinkChange={(link) => {
+                setJobOfferLink(link)
+                if (error) setError(null)
+              }}
+              onError={setError}
             />
 
             {/* Text field to paste job offer directly */}
@@ -342,7 +314,10 @@ export default function Home() {
               </label>
               <textarea
                 value={jobOfferText}
-                onChange={(e) => setJobOfferText(e.target.value)}
+                onChange={(e) => {
+                  setJobOfferText(e.target.value)
+                  if (error) setError(null)
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={6}
                 placeholder="Paste the complete job offer content here..."
@@ -377,23 +352,50 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Error Message - Above the button */}
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-md">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                  <button
+                    onClick={() => setError(null)}
+                    className="ml-4 flex-shrink-0 text-red-500 hover:text-red-700"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleProcess}
               disabled={isProcessing}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
+              {isProcessing && (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
               {isProcessing ? 'Processing...' : 'Start Process'}
             </button>
           </div>
         )}
 
-        {isProcessing && status && (
-          <ProgressTracker status={status} />
-        )}
-
         {results && (
           <ResultsDisplay 
-            results={results} 
+            results={results}
+            sessionId={previousSessionId.trim() || sessionId}
             onDownload={handleDownload}
             onNewProcess={handleNewProcess}
           />
