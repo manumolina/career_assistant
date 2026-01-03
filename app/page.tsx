@@ -5,7 +5,8 @@ import FileInput from '@/components/FileInput'
 import ResultsDisplay from '@/components/ResultsDisplay'
 import { Copy, Check, Shield, Lock } from 'lucide-react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const API_URL = 'https://p01--career-assistant-backend--rq5pvqc9l5v4.code.run'
 // Generate a random session ID
 function generateSessionId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
@@ -53,7 +54,7 @@ export default function Home() {
     try {
       await navigator.clipboard.writeText(sessionId)
       setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setTimeout(() => setCopied(false), 20process.env00)
     } catch (error) {
       console.error('Error copying to clipboard:', error)
       // Fallback for older browsers
@@ -115,7 +116,7 @@ export default function Home() {
       if (userIP) {
         formData.append('user_ip', userIP)
       }
-
+      console.log(`${API_URL}/api/process`);
       const response = await fetch(`${API_URL}/api/process`, {
         method: 'POST',
         body: formData,
