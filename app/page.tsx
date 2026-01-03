@@ -54,7 +54,7 @@ export default function Home() {
     try {
       await navigator.clipboard.writeText(sessionId)
       setCopied(true)
-      setTimeout(() => setCopied(false), 20process.env00)
+      setTimeout(() => setCopied(false), 2000)
     } catch (error) {
       console.error('Error copying to clipboard:', error)
       // Fallback for older browsers
