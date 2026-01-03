@@ -20,13 +20,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
     container_name: career-assistant-frontend
     ports:
       - "3100:3100"
     env_file:
       - .env
-    # Variables will be loaded from .env file automatically
-    # Only specify if you need to override or set defaults
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
     depends_on:
       - backend
     restart: unless-stopped

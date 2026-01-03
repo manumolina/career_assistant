@@ -24,8 +24,10 @@ services:
     container_name: career-assistant-frontend-dev
     ports:
       - "3100:3100"
+    env_file:
+      - .env
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:8080
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:8080}
     volumes:
       - ./app:/app/app
       - ./components:/app/components
