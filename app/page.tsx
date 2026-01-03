@@ -116,7 +116,7 @@ export default function Home() {
       if (userIP) {
         formData.append('user_ip', userIP)
       }
-      console.log(`${API_URL}/api/process`);
+
       const response = await fetch(`${API_URL}/api/process`, {
         method: 'POST',
         body: formData,
