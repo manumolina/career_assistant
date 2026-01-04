@@ -24,7 +24,11 @@ app = FastAPI(title="Career Assistant API")
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3100", "http://localhost:3001", "https://p01--career-assistant-frontend--rq5pvqc9l5v4.code.run"],
+    allow_origins=[
+        "http://localhost:3100",
+        "http://localhost:3001",
+        "http://200.234.237.82:3100"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
