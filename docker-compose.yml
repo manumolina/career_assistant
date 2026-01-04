@@ -1,24 +1,13 @@
 version: '3.8'
 
 services:
-  nginx:
-    image: nginx:stable-alpine
-    restart: always
-    ports:
-      - "8080:80"
-    volumes:
-      - ./nginx:/etc/nginx/conf.d/
-      - /etc/letsencrypt/:/etc/nginx/ssl/:ro
-    networks:
-      - default
-
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     container_name: career-assistant-backend
     ports:
-      - "8080:8080"
+      - "81:8080"
     env_file:
       - .env
     # Variables will be loaded from .env file automatically
