@@ -1,6 +1,17 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d/
+      - /etc/letsencrypt/:/etc/nginx/ssl/:ro
+    networks:
+      - default
+
   backend:
     build:
       context: .
