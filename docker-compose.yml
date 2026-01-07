@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.backend
     container_name: career-assistant-backend
     ports:
-      - "81:8080"
+      - "8080:8080"
     env_file:
       - .env
     # Variables will be loaded from .env file automatically
