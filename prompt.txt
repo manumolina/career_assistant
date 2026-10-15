@@ -1,0 +1,34 @@
+Vamos a crear una app que ayude a la gente a ver los puntos fuertes y debiles que tiene cuando se presentan a una oferta de trabajo.
+Usa Gemini para todo el proceso de creación, Tailwind CSS para el diseño, FastAPI como framework backend, Supabase como base de datos y Docker para la ejecución.
+Para ello trabajaremos una app 100% responsive para usar tanto en PC como movil.
+El interface incluirá:
+* una casilla para que el usuario adjunte el CV como link (documento en la nube) o como fichero.
+* una casilla para que el usuario adjunte la oferta de trabajo como link (documento, web etc) o como fichero.
+* una casilla para que el usuario incluya consideraciones adicionales.
+A partir de aquí, el usuario pulsará el botón de "Iniciar proceso".
+El sistema irá mostrando el progreso con una lista de tareas y haciendo checks a medida que las complete.
+Las tareas que hará son:
+1. Entenderá el CV adjunto
+2. Entenderá la oferta de trabajo.
+3. Comparará ambas y definirá los siguiente puntos:
+    a. puntos fuertes y debiles que el usuario tiene para presentarse a la oferta.
+    b. teniendo en cuento los puntos debiles, 
+    creará un plan de 4 semanas para que el usuario se pueda poner al día con los conceptos que le faltan.
+4. Mostrará un resumen de 2 o 3 lineas indicando al usuario si le recomienda aplicar a la oferta o no lo recomienda.
+5. Calculará el tanto por ciento de puntos fuertes vs debiles y lo mostrará también en el resultado.
+6. Creará un pdf con todo lo obtenido en el proceso, incluyendo el plan de 4 semanas y lo guardará en la base de datos.
+Posteriormente lo descargará para el usuario.
+
+La base de datos tendrá las siguientes tablas:
+* pdfs: para gestionar los pdfs generados.
+Y debe contener los siguientes campos:
+* id: para el id del pdf.
+* user_id: para el id del usuario (de momento lo dejaremos como "test" o "demo").
+* pdf_path: para la ruta del pdf que estará en el bucket de Supabase.
+* created_at: para la fecha de creación.
+Los ficheros solo se guardarán en el bucket de Supabase durante 1 semana y luego se eliminarán.
+
+Hazme cualquier pregunta que necesites para poder empezar a trabajar.
+
+Supabase DB pass
+hCZtwKJXliQPe2TI

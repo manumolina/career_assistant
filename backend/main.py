@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 from lib.document_processor import extract_text_from_input
 from lib.gemini_client import analyze_cv, analyze_job_offer, compare_cv_and_offer
 from lib.pdf_generator import generate_pdf
-from lib.supabase_client import supabase_admin, supabase_client
+from lib.supabase_client import check_supabase_connection, supabase_admin, supabase_client
 
 load_dotenv()
 
@@ -21,14 +21,22 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Career Assistant API")
 
-# CORS configuration
+# CORS configuration (direct API access; frontend proxy avoids CORS for /api calls)
+_default_cors_origins = [
+    "http://localhost:3100",
+    "http://127.0.0.1:3100",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://200.234.237.82:3100",
+]
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3100",
-        "http://localhost:3001",
-        "http://200.234.237.82:3100"
-    ],
+    allow_origins=_cors_origins or _default_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,19 +52,46 @@ async def root():
     return {"message": "Career Assistant API"}
 
 
+@app.on_event("startup")
+async def validate_supabase_on_startup():
+    """Warn at startup if Supabase is misconfigured or unreachable."""
+    supabase = check_supabase_connection()
+    if supabase["reachable"]:
+        logger.info("Supabase connection verified")
+        return
+
+    if not supabase["dns_resolves"]:
+        logger.warning(
+            "Supabase hostname '%s' does not resolve. "
+            "Cache, rate limiting, and request logging will not work. "
+            "Check SUPABASE_URL in .env.",
+            supabase["hostname"],
+        )
+        return
+
+    logger.warning(
+        "Supabase is unreachable: %s. "
+        "Cache, rate limiting, and request logging may fail.",
+        supabase["error"],
+    )
+
+
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint to verify Supabase configuration"""
-    health_status = {
-        "status": "ok",
-        "supabase": {
-            "url_configured": bool(os.getenv("SUPABASE_URL")),
-            "anon_key_configured": bool(os.getenv("SUPABASE_ANON_KEY")),
-            "service_key_configured": bool(os.getenv("SUPABASE_SERVICE_ROLE_KEY")),
-        }
-    }
+    """Health check endpoint to verify Supabase configuration and connectivity"""
+    supabase = check_supabase_connection()
 
-    return health_status
+    if supabase["reachable"]:
+        status = "ok"
+    elif supabase["url_configured"] and supabase["anon_key_configured"]:
+        status = "degraded"
+    else:
+        status = "error"
+
+    return {
+        "status": status,
+        "supabase": supabase,
+    }
 
 
 def generate_hash(text: str) -> str:

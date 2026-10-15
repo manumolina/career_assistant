@@ -5,7 +5,6 @@ import FileInput from '@/components/FileInput'
 import ResultsDisplay from '@/components/ResultsDisplay'
 import { Copy, Check, Shield, Lock } from 'lucide-react'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 // Generate a random session ID
 function generateSessionId(): string {
   return `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`
@@ -116,7 +115,7 @@ export default function Home() {
         formData.append('user_ip', userIP)
       }
 
-      const response = await fetch(`${API_URL}/api/process`, {
+      const response = await fetch('/api/process', {
         method: 'POST',
         body: formData,
       })
@@ -164,7 +163,13 @@ export default function Home() {
 
     } catch (error) {
       console.error('Error:', error)
-      setError(error instanceof Error ? error.message : 'Error processing request. Please try again.')
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        setError(
+          'Could not connect to the server. The analysis may still be running; try refreshing or reusing your session ID.'
+        )
+      } else {
+        setError(error instanceof Error ? error.message : 'Error processing request. Please try again.')
+      }
       setIsProcessing(false)
     }
   }
@@ -173,7 +178,7 @@ export default function Home() {
     if (!processId) return
 
     try {
-      const response = await fetch(`${API_URL}/api/download/${processId}`)
+      const response = await fetch(`/api/download/${processId}`)
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')

@@ -26,6 +26,8 @@ services:
       - "3100:3100"
     env_file:
       - .env
+    environment:
+      - BACKEND_URL=http://backend:8080
     volumes:
       - ./app:/app/app
       - ./components:/app/components

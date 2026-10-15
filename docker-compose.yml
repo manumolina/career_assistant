@@ -21,15 +21,14 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+        - BACKEND_URL=http://backend:8080
     container_name: career-assistant-frontend
     ports:
       - "3100:3100"
     env_file:
       - .env
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      - BACKEND_URL=http://backend:8080
     depends_on:
       - backend
     restart: unless-stopped
-
